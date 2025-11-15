@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		A1000001 /* MorefastlightApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001 /* MorefastlightApp.swift */; };
 		FA3E12222EC8215A00D206F0 /* SearchWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3E121E2EC8215A00D206F0 /* SearchWindow.swift */; };
-		FA3E12232EC8215A00D206F0 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3E12082EC8215A00D206F0 /* App.swift */; };
 		FA3E12242EC8215A00D206F0 /* ErrorPopup.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3E121B2EC8215A00D206F0 /* ErrorPopup.swift */; };
 		FA3E12252EC8215A00D206F0 /* AppCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3E12112EC8215A00D206F0 /* AppCache.swift */; };
 		FA3E12262EC8215A00D206F0 /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3E12152EC8215A00D206F0 /* HotkeyManager.swift */; };
@@ -28,13 +27,28 @@
 		FA3E12332EC8215A00D206F0 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3E12202EC8215A00D206F0 /* SettingsView.swift */; };
 		FA3E12342EC8215A00D206F0 /* AppIndexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3E12122EC8215A00D206F0 /* AppIndexer.swift */; };
 		FA3E12352EC8215A00D206F0 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3E120A2EC8215A00D206F0 /* Config.swift */; };
+		FA3E12372EC8226700D206F0 /* InstalledApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3E12362EC8226700D206F0 /* InstalledApp.swift */; };
+		FA3E123A2EC82AEB00D206F0 /* icon.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = FA3E120F2EC8215A00D206F0 /* icon.png */; };
+		FA3E123C2EC83C8B00D206F0 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3E123B2EC83C8B00D206F0 /* SettingsWindowController.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		FA3E12392EC82AC900D206F0 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				FA3E123A2EC82AEB00D206F0 /* icon.png in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		A1000000 /* Morefastlight.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Morefastlight.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2000001 /* MorefastlightApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MorefastlightApp.swift; sourceTree = "<group>"; };
 		A2000002 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		FA3E12082EC8215A00D206F0 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		FA3E12092EC8215A00D206F0 /* CommandResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandResult.swift; sourceTree = "<group>"; };
 		FA3E120A2EC8215A00D206F0 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		FA3E120B2EC8215A00D206F0 /* PathEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathEntry.swift; sourceTree = "<group>"; };
@@ -55,6 +69,8 @@
 		FA3E121E2EC8215A00D206F0 /* SearchWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchWindow.swift; sourceTree = "<group>"; };
 		FA3E121F2EC8215A00D206F0 /* SearchWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchWindowController.swift; sourceTree = "<group>"; };
 		FA3E12202EC8215A00D206F0 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		FA3E12362EC8226700D206F0 /* InstalledApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledApp.swift; sourceTree = "<group>"; };
+		FA3E123B2EC83C8B00D206F0 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -91,7 +107,7 @@
 		FA3E120E2EC8215A00D206F0 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				FA3E12082EC8215A00D206F0 /* App.swift */,
+				FA3E12362EC8226700D206F0 /* InstalledApp.swift */,
 				FA3E12092EC8215A00D206F0 /* CommandResult.swift */,
 				FA3E120A2EC8215A00D206F0 /* Config.swift */,
 				FA3E120B2EC8215A00D206F0 /* PathEntry.swift */,
@@ -134,6 +150,7 @@
 		FA3E12212EC8215A00D206F0 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				FA3E123B2EC83C8B00D206F0 /* SettingsWindowController.swift */,
 				FA3E121B2EC8215A00D206F0 /* ErrorPopup.swift */,
 				FA3E121C2EC8215A00D206F0 /* SearchField.swift */,
 				FA3E121D2EC8215A00D206F0 /* SearchResultRow.swift */,
@@ -152,6 +169,7 @@
 			buildConfigurationList = A4000000 /* Build configuration list for PBXNativeTarget "Morefastlight" */;
 			buildPhases = (
 				A5000000 /* Sources */,
+				FA3E12392EC82AC900D206F0 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -200,8 +218,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA3E12222EC8215A00D206F0 /* SearchWindow.swift in Sources */,
-				FA3E12232EC8215A00D206F0 /* App.swift in Sources */,
 				FA3E12242EC8215A00D206F0 /* ErrorPopup.swift in Sources */,
+				FA3E12372EC8226700D206F0 /* InstalledApp.swift in Sources */,
 				FA3E12252EC8215A00D206F0 /* AppCache.swift in Sources */,
 				FA3E12262EC8215A00D206F0 /* HotkeyManager.swift in Sources */,
 				FA3E12272EC8215A00D206F0 /* SearchField.swift in Sources */,
@@ -215,6 +233,7 @@
 				FA3E122F2EC8215A00D206F0 /* ConfigManager.swift in Sources */,
 				FA3E12302EC8215A00D206F0 /* SearchWindowController.swift in Sources */,
 				FA3E12312EC8215A00D206F0 /* PathEntry.swift in Sources */,
+				FA3E123C2EC83C8B00D206F0 /* SettingsWindowController.swift in Sources */,
 				FA3E12322EC8215A00D206F0 /* PathAutocompleter.swift in Sources */,
 				FA3E12332EC8215A00D206F0 /* SettingsView.swift in Sources */,
 				FA3E12342EC8215A00D206F0 /* AppIndexer.swift in Sources */,

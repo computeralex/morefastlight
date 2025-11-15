@@ -39,13 +39,34 @@ struct GeneralSettings: View {
                 TextField("Shell:", text: $config.shell)
             }
 
-            Section("Search Paths") {
-                List {
-                    ForEach(config.appSearchPaths, id: \.self) { path in
-                        Text(path)
+            Section("App Indexing") {
+                HStack {
+                    Text("Reindex Interval:")
+                    TextField("Hours", value: $config.reindexIntervalHours, format: .number)
+                        .frame(width: 80)
+                    Text("hours")
+                    Spacer()
+                }
+
+                Button("Reindex Now") {
+                    Task {
+                        await AppCache.shared.rebuildIndex()
                     }
                 }
-                .frame(height: 100)
+            }
+
+            Section("Search Paths") {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(config.appSearchPaths, id: \.self) { path in
+                        Text(path)
+                            .font(.system(.body, design: .monospaced))
+                    }
+                }
+                .frame(minHeight: 150)
+
+                Text("Common paths: /Applications, ~/Applications, /System/Applications")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
 
             HStack {

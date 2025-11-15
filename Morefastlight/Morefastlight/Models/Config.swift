@@ -13,6 +13,7 @@ struct Config: Codable {
     var customDirectoryActions: [QuickAction]
     var ui: UIConfig
     var cache: CacheConfig
+    var reindexIntervalHours: Int
 
     enum CodingKeys: String, CodingKey {
         case version
@@ -27,6 +28,40 @@ struct Config: Codable {
         case customDirectoryActions = "custom_directory_actions"
         case ui
         case cache
+        case reindexIntervalHours = "reindex_interval_hours"
+    }
+
+    init(version: String, hotkey: String, terminalApp: String, shell: String, appSearchPaths: [String], commandPrefixes: [String], terminalOpeningCommands: [String], forceOutputPrefix: String, directoryQuickActions: [QuickAction], customDirectoryActions: [QuickAction], ui: UIConfig, cache: CacheConfig, reindexIntervalHours: Int) {
+        self.version = version
+        self.hotkey = hotkey
+        self.terminalApp = terminalApp
+        self.shell = shell
+        self.appSearchPaths = appSearchPaths
+        self.commandPrefixes = commandPrefixes
+        self.terminalOpeningCommands = terminalOpeningCommands
+        self.forceOutputPrefix = forceOutputPrefix
+        self.directoryQuickActions = directoryQuickActions
+        self.customDirectoryActions = customDirectoryActions
+        self.ui = ui
+        self.cache = cache
+        self.reindexIntervalHours = reindexIntervalHours
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        version = try container.decode(String.self, forKey: .version)
+        hotkey = try container.decode(String.self, forKey: .hotkey)
+        terminalApp = try container.decode(String.self, forKey: .terminalApp)
+        shell = try container.decode(String.self, forKey: .shell)
+        appSearchPaths = try container.decode([String].self, forKey: .appSearchPaths)
+        commandPrefixes = try container.decode([String].self, forKey: .commandPrefixes)
+        terminalOpeningCommands = try container.decode([String].self, forKey: .terminalOpeningCommands)
+        forceOutputPrefix = try container.decode(String.self, forKey: .forceOutputPrefix)
+        directoryQuickActions = try container.decode([QuickAction].self, forKey: .directoryQuickActions)
+        customDirectoryActions = try container.decode([QuickAction].self, forKey: .customDirectoryActions)
+        ui = try container.decode(UIConfig.self, forKey: .ui)
+        cache = try container.decode(CacheConfig.self, forKey: .cache)
+        reindexIntervalHours = try container.decodeIfPresent(Int.self, forKey: .reindexIntervalHours) ?? 24
     }
 
     static var `default`: Config {
@@ -37,7 +72,9 @@ struct Config: Codable {
             shell: "/bin/zsh",
             appSearchPaths: [
                 "/Applications",
-                "~/Applications"
+                "~/Applications",
+                "/System/Applications",
+                "/System/Applications/Utilities"
             ],
             commandPrefixes: [
                 "open", "cd", "ls", "git", "npm", "yarn", "pnpm", "brew",
@@ -67,7 +104,8 @@ struct Config: Codable {
             cache: CacheConfig(
                 appIndexPath: "~/.morefastlight/app_index.cache",
                 recentPathsLimit: 50
-            )
+            ),
+            reindexIntervalHours: 24
         )
     }
 }

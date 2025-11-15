@@ -105,9 +105,14 @@ class CommandExecutor {
             """
         } else {
             script = """
+            tell application "System Events"
+                tell process "Terminal"
+                    keystroke "n" using command down
+                end tell
+            end tell
+            delay 0.2
             tell application "Terminal"
-                do script "cd '\(expandedPath)'"
-                activate
+                do script "cd '\(expandedPath)'" in front window
             end tell
             """
         }

@@ -14,8 +14,10 @@ struct MorefastlightApp: App {
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
     var searchWindowController: SearchWindowController?
+    var settingsWindowController: SettingsWindowController?
     let hotkeyManager = HotkeyManager()
     let appCache = AppCache.shared
+    var reindexTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Setup menu bar icon
@@ -30,13 +32,42 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         Task {
             await appCache.loadAppIndex()
         }
+
+        // Set up periodic reindexing (every 24 hours)
+        startPeriodicReindexing()
+    }
+
+    func startPeriodicReindexing() {
+        // Load config to get reindex interval
+        let configManager = ConfigManager()
+        let intervalSeconds = TimeInterval(configManager.config.reindexIntervalHours * 3600)
+
+        reindexTimer = Timer.scheduledTimer(withTimeInterval: intervalSeconds, repeats: true) { [weak self] _ in
+            print("Periodic reindexing...")
+            Task {
+                await self?.appCache.rebuildIndex()
+            }
+        }
+    }
+
+    deinit {
+        reindexTimer?.invalidate()
     }
 
     private func setupMenuBar() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
 
         if let button = statusItem?.button {
-            button.image = NSImage(systemSymbolName: "bolt.fill", accessibilityDescription: "Morefastlight")
+            // Load custom rocket icon
+            if let iconPath = Bundle.main.path(forResource: "icon", ofType: "png"),
+               let iconImage = NSImage(contentsOfFile: iconPath) {
+                iconImage.isTemplate = true // Makes it adapt to light/dark mode
+                iconImage.size = NSSize(width: 18, height: 18)
+                button.image = iconImage
+            } else {
+                // Fallback to SF Symbol if custom icon not found
+                button.image = NSImage(systemSymbolName: "bolt.fill", accessibilityDescription: "Morefastlight")
+            }
         }
 
         let menu = NSMenu()
@@ -60,7 +91,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func showSettings() {
-        NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+        if settingsWindowController == nil {
+            settingsWindowController = SettingsWindowController()
+        }
+        settingsWindowController?.showWindow(nil)
+        settingsWindowController?.window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
 

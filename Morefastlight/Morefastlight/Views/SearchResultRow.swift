@@ -5,22 +5,22 @@ struct SearchResultRow: View {
     let isSelected: Bool
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 16) {
             // Icon
             Image(systemName: iconName)
-                .font(.system(size: 24))
+                .font(.system(size: 28))
                 .foregroundColor(.accentColor)
-                .frame(width: 32, height: 32)
+                .frame(width: 40, height: 40)
 
             // Title and subtitle
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.system(size: 14))
+                    .font(.system(size: 18, weight: .medium))
                     .lineLimit(1)
 
                 if let subtitle = subtitle {
                     Text(subtitle)
-                        .font(.system(size: 12))
+                        .font(.system(size: 14))
                         .foregroundColor(.secondary)
                         .lineLimit(1)
                 }
@@ -35,8 +35,8 @@ struct SearchResultRow: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 14)
         .background(isSelected ? Color.accentColor.opacity(0.15) : Color.clear)
         .contentShape(Rectangle())
     }

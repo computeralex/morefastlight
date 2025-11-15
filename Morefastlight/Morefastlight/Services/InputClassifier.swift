@@ -18,16 +18,16 @@ class InputClassifier {
         let trimmed = input.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return .appSearch }
 
+        // Check if it's a path (even if incomplete)
+        if trimmed.hasPrefix("/") || trimmed.hasPrefix("~") || trimmed.hasPrefix(".") || trimmed.hasPrefix("..") {
+            return .path
+        }
+
         // Check for command prefix
         for prefix in config.commandPrefixes {
             if trimmed.hasPrefix(prefix + " ") || trimmed == prefix {
                 return .command
             }
-        }
-
-        // Check if it's a path
-        if isPath(trimmed) {
-            return .path
         }
 
         // Default to app search

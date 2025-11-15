@@ -6,6 +6,7 @@ struct SearchField: NSViewRepresentable {
     var onSubmit: () -> Void
     var onEscape: () -> Void
     var onTab: () -> Void
+    var onShiftTab: () -> Void
     var onArrowUp: () -> Void
     var onArrowDown: () -> Void
 
@@ -13,7 +14,7 @@ struct SearchField: NSViewRepresentable {
         let textField = CustomTextField()
         textField.delegate = context.coordinator
         textField.placeholderString = "Search apps, run commands, or navigate paths..."
-        textField.font = NSFont.systemFont(ofSize: 18)
+        textField.font = NSFont.systemFont(ofSize: 24, weight: .medium)
         textField.isBordered = false
         textField.focusRingType = .none
         textField.backgroundColor = .clear
@@ -23,6 +24,7 @@ struct SearchField: NSViewRepresentable {
         context.coordinator.onSubmit = onSubmit
         context.coordinator.onEscape = onEscape
         context.coordinator.onTab = onTab
+        context.coordinator.onShiftTab = onShiftTab
         context.coordinator.onArrowUp = onArrowUp
         context.coordinator.onArrowDown = onArrowDown
 
@@ -43,6 +45,7 @@ struct SearchField: NSViewRepresentable {
         var onSubmit: (() -> Void)?
         var onEscape: (() -> Void)?
         var onTab: (() -> Void)?
+        var onShiftTab: (() -> Void)?
         var onArrowUp: (() -> Void)?
         var onArrowDown: (() -> Void)?
 
@@ -56,36 +59,50 @@ struct SearchField: NSViewRepresentable {
             }
         }
 
-        @objc func handleKeyDown(_ event: NSEvent) -> Bool {
-            switch Int(event.keyCode) {
-            case 36: // Return
+        func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            print("DEBUG: doCommandBy called with selector: \(commandSelector)")
+
+            switch commandSelector {
+            case #selector(NSResponder.insertNewline(_:)): // Return/Enter
+                print("DEBUG: Return key detected, calling onSubmit")
                 onSubmit?()
                 return true
-            case 53: // Escape
+
+            case #selector(NSResponder.cancelOperation(_:)): // Escape
+                print("DEBUG: Escape key detected, calling onEscape")
                 onEscape?()
                 return true
-            case 48: // Tab
+
+            case #selector(NSResponder.insertTab(_:)): // Tab
+                print("DEBUG: Tab key detected, calling onTab")
                 onTab?()
                 return true
-            case 126: // Up arrow
+
+            case #selector(NSResponder.insertBacktab(_:)): // Shift+Tab
+                print("DEBUG: Shift+Tab key detected, calling onShiftTab")
+                onShiftTab?()
+                return true
+
+            case #selector(NSResponder.moveUp(_:)): // Up arrow
+                print("DEBUG: Up arrow detected, calling onArrowUp")
                 onArrowUp?()
                 return true
-            case 125: // Down arrow
+
+            case #selector(NSResponder.moveDown(_:)): // Down arrow
+                print("DEBUG: Down arrow detected, calling onArrowDown")
                 onArrowDown?()
                 return true
+
             default:
+                print("DEBUG: Unhandled selector: \(commandSelector)")
                 return false
             }
         }
     }
 
     class CustomTextField: NSTextField {
-        override func keyDown(with event: NSEvent) {
-            if let coordinator = delegate as? Coordinator,
-               coordinator.handleKeyDown(event) {
-                return
-            }
-            super.keyDown(with: event)
+        override var acceptsFirstResponder: Bool {
+            return true
         }
 
         override func becomeFirstResponder() -> Bool {

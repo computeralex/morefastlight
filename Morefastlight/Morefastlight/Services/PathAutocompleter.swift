@@ -5,14 +5,26 @@ class PathAutocompleter {
 
     func autocomplete(_ input: String) -> [String] {
         let expandedPath = NSString(string: input).expandingTildeInPath
-        let directory = (expandedPath as NSString).deletingLastPathComponent
-        let prefix = (expandedPath as NSString).lastPathComponent
+
+        // If input ends with /, we want to list all items IN that directory
+        let directory: String
+        let prefix: String
+
+        if input.hasSuffix("/") {
+            directory = expandedPath
+            prefix = ""
+        } else {
+            directory = (expandedPath as NSString).deletingLastPathComponent
+            prefix = (expandedPath as NSString).lastPathComponent
+        }
 
         guard fileManager.fileExists(atPath: directory) else { return [] }
 
         do {
             let contents = try fileManager.contentsOfDirectory(atPath: directory)
             let matches = contents.filter { item in
+                // Skip hidden files (starting with .)
+                !item.hasPrefix(".") &&
                 item.lowercased().hasPrefix(prefix.lowercased()) &&
                 isDirectory("\(directory)/\(item)")
             }.sorted()
