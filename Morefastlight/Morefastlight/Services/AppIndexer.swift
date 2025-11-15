@@ -8,8 +8,8 @@ class AppIndexer {
         self.config = config
     }
 
-    func buildIndex() async -> [App] {
-        var apps: [App] = []
+    func buildIndex() async -> [InstalledApp] {
+        var apps: [InstalledApp] = []
 
         for searchPath in config.appSearchPaths {
             let expandedPath = NSString(string: searchPath).expandingTildeInPath
@@ -18,7 +18,7 @@ class AppIndexer {
         }
 
         // Remove duplicates based on path
-        var uniqueApps: [String: App] = [:]
+        var uniqueApps: [String: InstalledApp] = [:]
         for app in apps {
             uniqueApps[app.path] = app
         }
@@ -26,11 +26,11 @@ class AppIndexer {
         return Array(uniqueApps.values).sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
-    private func scanDirectory(at path: String, depth: Int = 0, maxDepth: Int = 2) async -> [App] {
+    private func scanDirectory(at path: String, depth: Int = 0, maxDepth: Int = 2) async -> [InstalledApp] {
         guard depth <= maxDepth else { return [] }
         guard fileManager.fileExists(atPath: path) else { return [] }
 
-        var apps: [App] = []
+        var apps: [InstalledApp] = []
 
         do {
             let contents = try fileManager.contentsOfDirectory(atPath: path)
@@ -45,7 +45,7 @@ class AppIndexer {
                     // Found an application
                     let appName = item.replacingOccurrences(of: ".app", with: "")
                     let appType: AppType = determineAppType(path: path)
-                    let app = App(name: appName, path: itemPath, type: appType)
+                    let app = InstalledApp(name: appName, path: itemPath, type: appType)
                     apps.append(app)
                 } else if isDirectory.boolValue && !item.hasPrefix(".") {
                     // Recurse into subdirectory

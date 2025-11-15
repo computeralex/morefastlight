@@ -1,7 +1,7 @@
 import Foundation
 
 enum SearchResult: Identifiable, Hashable {
-    case app(App)
+    case app(InstalledApp)
     case directoryAction(DirectoryAction)
     case command(String)
 

@@ -2,14 +2,14 @@ import Foundation
 
 struct AppIndexCache: Codable {
     let version: String
-    let apps: [App]
+    let apps: [InstalledApp]
     let timestamp: Date
 }
 
 actor AppCache {
     static let shared = AppCache()
 
-    private var apps: [App] = []
+    private var apps: [InstalledApp] = []
     private var config: Config = .default
     private let cacheURL: URL
 
@@ -39,7 +39,7 @@ actor AppCache {
         print("Indexed \(apps.count) apps")
     }
 
-    func search(_ query: String) async -> [App] {
+    func search(_ query: String) async -> [InstalledApp] {
         guard !query.isEmpty else { return Array(apps.prefix(config.ui.maxResults)) }
 
         let fuzzySearch = FuzzySearch()
@@ -47,12 +47,12 @@ actor AppCache {
         return results
     }
 
-    func getApp(at index: Int) async -> App? {
+    func getApp(at index: Int) async -> InstalledApp? {
         guard index >= 0 && index < apps.count else { return nil }
         return apps[index]
     }
 
-    func recordAppLaunch(_ app: App) async {
+    func recordAppLaunch(_ app: InstalledApp) async {
         if let index = apps.firstIndex(where: { $0.id == app.id }) {
             apps[index].useCount += 1
             apps[index].lastUsed = Date()

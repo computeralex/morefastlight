@@ -1,11 +1,11 @@
 import Foundation
 
 class FuzzySearch {
-    func search(query: String, in apps: [App], maxResults: Int = 8) -> [App] {
+    func search(query: String, in apps: [InstalledApp], maxResults: Int = 8) -> [InstalledApp] {
         let lowerQuery = query.lowercased()
 
         // Score each app
-        let scoredApps = apps.compactMap { app -> (App, Double)? in
+        let scoredApps = apps.compactMap { app -> (InstalledApp, Double)? in
             guard let score = calculateScore(query: lowerQuery, app: app) else { return nil }
             return (app, score)
         }
@@ -17,7 +17,7 @@ class FuzzySearch {
         return sorted.prefix(maxResults).map { $0.0 }
     }
 
-    private func calculateScore(query: String, app: App) -> Double? {
+    private func calculateScore(query: String, app: InstalledApp) -> Double? {
         let appName = app.name.lowercased()
 
         // Exact match

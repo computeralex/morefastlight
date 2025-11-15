@@ -6,7 +6,7 @@ enum AppType: String, Codable {
     case system
 }
 
-struct App: Codable, Identifiable, Hashable {
+struct InstalledApp: Codable, Identifiable, Hashable {
     let id: UUID
     let name: String
     let path: String

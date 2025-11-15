@@ -147,7 +147,7 @@ struct SearchWindow: View {
         }
     }
 
-    private func launchApp(_ app: App) {
+    private func launchApp(_ app: InstalledApp) {
         NSWorkspace.shared.launchApplication(
             at: URL(fileURLWithPath: app.path),
             options: [],
