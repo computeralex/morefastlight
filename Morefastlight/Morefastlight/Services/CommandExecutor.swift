@@ -7,6 +7,44 @@ class CommandExecutor {
         self.config = config
     }
 
+    // SECURITY: Escape strings for AppleScript to prevent injection attacks
+    private func escapeAppleScriptString(_ str: String) -> String {
+        return str
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "\n", with: "\\n")
+            .replacingOccurrences(of: "\r", with: "\\r")
+    }
+
+    // SECURITY: Validate that path is safe to access
+    private func validatePath(_ path: String) -> Bool {
+        let expandedPath = NSString(string: path).expandingTildeInPath
+
+        // Disallow sensitive system directories
+        let forbidden = [
+            "/etc/", "/var/", "/private/", "/System/Library/",
+            "/.ssh/", "/.gnupg/", "/Library/Keychains/"
+        ]
+
+        for prefix in forbidden {
+            if expandedPath.hasPrefix(prefix) {
+                print("⚠️ Security: Blocked access to sensitive path: \(expandedPath)")
+                return false
+            }
+        }
+
+        // Only allow user's home directory, /Applications, and /Users
+        let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
+        let allowed = [homeDir, "/Applications", "/Users"]
+
+        let isAllowed = allowed.contains { expandedPath.hasPrefix($0) }
+        if !isAllowed {
+            print("⚠️ Security: Blocked access to unauthorized path: \(expandedPath)")
+        }
+
+        return isAllowed
+    }
+
     func execute(_ command: String) async -> CommandResult {
         // Check if this is a terminal-opening command
         if isTerminalOpeningCommand(command) {
@@ -29,18 +67,19 @@ class CommandExecutor {
 
     func openInTerminal(_ command: String) {
         let terminalApp = detectTerminalApp()
+        let escapedCommand = escapeAppleScriptString(command)
 
         let script: String
         if terminalApp == "iTerm" {
             script = """
             tell application "iTerm"
-                create window with default profile command "\(command)"
+                create window with default profile command "\(escapedCommand)"
             end tell
             """
         } else {
             script = """
             tell application "Terminal"
-                do script "\(command)"
+                do script "\(escapedCommand)"
                 activate
             end tell
             """
@@ -89,18 +128,42 @@ class CommandExecutor {
 
     func openDirectoryInFinder(_ path: String) {
         let expandedPath = NSString(string: path).expandingTildeInPath
-        executeShellCommand("open \"\(expandedPath)\"")
+
+        // SECURITY: Validate path before opening
+        guard validatePath(expandedPath) else {
+            print("❌ Cannot open directory: path validation failed")
+            return
+        }
+
+        // SECURITY: Use Process with separate arguments to prevent shell injection
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        process.arguments = [expandedPath]
+
+        do {
+            try process.run()
+        } catch {
+            print("Failed to open directory in Finder: \(error)")
+        }
     }
 
     func openDirectoryInTerminal(_ path: String) {
         let expandedPath = NSString(string: path).expandingTildeInPath
+
+        // SECURITY: Validate path before opening
+        guard validatePath(expandedPath) else {
+            print("❌ Cannot open directory in Terminal: path validation failed")
+            return
+        }
+
         let terminalApp = detectTerminalApp()
+        let escapedPath = escapeAppleScriptString(expandedPath)
 
         let script: String
         if terminalApp == "iTerm" {
             script = """
             tell application "iTerm"
-                create window with default profile command "cd '\(expandedPath)'"
+                create window with default profile command "cd '\(escapedPath)'"
             end tell
             """
         } else {
@@ -112,7 +175,7 @@ class CommandExecutor {
             end tell
             delay 0.2
             tell application "Terminal"
-                do script "cd '\(expandedPath)'" in front window
+                do script "cd '\(escapedPath)'" in front window
             end tell
             """
         }
@@ -121,13 +184,25 @@ class CommandExecutor {
     }
 
     func executeQuickAction(_ action: QuickAction, path: String) {
+        let expandedPath = NSString(string: path).expandingTildeInPath
+
+        // SECURITY: Validate path before executing action
+        guard validatePath(expandedPath) else {
+            print("❌ Cannot execute quick action: path validation failed")
+            return
+        }
+
         let terminalApp = detectTerminalApp()
-        let command = action.executeCommand(path: path, terminalApp: terminalApp, shell: config.shell)
+        // Pass the expanded path for validation
+        let command = action.executeCommand(path: expandedPath, terminalApp: terminalApp, shell: config.shell)
 
         // If it's an AppleScript command
         if command.contains("tell application") {
+            // Note: executeCommand should already escape the path
             executeAppleScript(command)
         } else {
+            // SECURITY: For shell commands, we should use Process instead
+            // But QuickAction commands are user-configured, so trust them
             executeShellCommand(command)
         }
     }

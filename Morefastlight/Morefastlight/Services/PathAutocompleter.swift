@@ -3,6 +3,29 @@ import Foundation
 class PathAutocompleter {
     private let fileManager = FileManager.default
 
+    // SECURITY: Validate that path is safe to access
+    private func validatePath(_ path: String) -> Bool {
+        let expandedPath = NSString(string: path).expandingTildeInPath
+
+        // Disallow sensitive system directories
+        let forbidden = [
+            "/etc/", "/var/", "/private/", "/System/Library/",
+            "/.ssh/", "/.gnupg/", "/Library/Keychains/"
+        ]
+
+        for prefix in forbidden {
+            if expandedPath.hasPrefix(prefix) {
+                return false
+            }
+        }
+
+        // Only allow user's home directory, /Applications, and /Users
+        let homeDir = fileManager.homeDirectoryForCurrentUser.path
+        let allowed = [homeDir, "/Applications", "/Users"]
+
+        return allowed.contains { expandedPath.hasPrefix($0) }
+    }
+
     func autocomplete(_ input: String) -> [String] {
         let expandedPath = NSString(string: input).expandingTildeInPath
 
@@ -16,6 +39,12 @@ class PathAutocompleter {
         } else {
             directory = (expandedPath as NSString).deletingLastPathComponent
             prefix = (expandedPath as NSString).lastPathComponent
+        }
+
+        // SECURITY: Validate path before accessing
+        guard validatePath(directory) else {
+            print("⚠️ Security: Blocked autocomplete for sensitive path: \(directory)")
+            return []
         }
 
         guard fileManager.fileExists(atPath: directory) else { return [] }
