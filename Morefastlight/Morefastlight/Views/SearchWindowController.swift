@@ -29,10 +29,6 @@ class SearchWindowController: NSWindowController, NSWindowDelegate {
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         window.isMovableByWindowBackground = true
 
-        let searchView = SearchWindow()
-        let hostingView = NSHostingView(rootView: searchView)
-        window.contentView = hostingView
-
         self.init(window: window)
         window.delegate = self
     }
@@ -46,6 +42,13 @@ class SearchWindowController: NSWindowController, NSWindowDelegate {
     override func showWindow(_ sender: Any?) {
         guard let window = window else { return }
 
+        print("DEBUG: showWindow called")
+
+        // Recreate the content view each time to ensure fresh state
+        let searchView = SearchWindow()
+        let hostingView = NSHostingView(rootView: searchView)
+        window.contentView = hostingView
+
         // Center on screen
         if let screen = NSScreen.main {
             let screenRect = screen.visibleFrame
@@ -55,8 +58,17 @@ class SearchWindowController: NSWindowController, NSWindowDelegate {
             window.setFrame(NSRect(x: x, y: y, width: windowRect.width, height: windowRect.height), display: true)
         }
 
-        NSApp.activate(ignoringOtherApps: true)
+        // Make window visible first
         window.makeKeyAndOrderFront(sender)
+
+        // THEN activate the app - this is critical after Terminal has taken focus
+        NSApp.activate(ignoringOtherApps: true)
+
+        // Make sure window is key again after activation
+        window.makeKey()
+
+        print("DEBUG: Window is key? \(window.isKeyWindow)")
+        print("DEBUG: App is active? \(NSApp.isActive)")
 
         // Install click monitor to close window when clicking outside
         if clickMonitor == nil {
@@ -70,11 +82,17 @@ class SearchWindowController: NSWindowController, NSWindowDelegate {
             }
         }
 
-        // Focus the text field aggressively with multiple attempts
-        for delay in [0.0, 0.05, 0.1, 0.2] {
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
-                self?.focusTextField(in: window.contentView)
-            }
+        // Give SwiftUI time to fully render, then focus with ONE strong attempt
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let self = self, let window = self.window else { return }
+            print("DEBUG: Attempting to focus text field...")
+            print("DEBUG: Window is still key? \(window.isKeyWindow)")
+
+            // Reactivate app and window to be absolutely sure
+            NSApp.activate(ignoringOtherApps: true)
+            window.makeKey()
+
+            self.focusTextField(in: window.contentView)
         }
     }
 
@@ -87,19 +105,37 @@ class SearchWindowController: NSWindowController, NSWindowDelegate {
     }
 
     private func focusTextField(in view: NSView?) {
-        guard let view = view, let window = window else { return }
+        guard let view = view, let window = window else {
+            print("DEBUG: No view or window in focusTextField")
+            return
+        }
 
         // Find NSTextField in subviews (recursively search the entire hierarchy)
         if let textField = view as? NSTextField {
-            print("DEBUG: Found text field, making first responder")
-            // Make window key first
+            print("DEBUG: ✅ Found text field!")
+            print("DEBUG: Text field can become first responder? \(textField.acceptsFirstResponder)")
+            print("DEBUG: Window first responder before: \(String(describing: window.firstResponder))")
+
+            // Make absolutely sure window is key
             window.makeKey()
-            // Then make text field first responder
-            window.makeFirstResponder(textField)
-            // Force it to become first responder
-            _ = textField.becomeFirstResponder()
+
+            // Make text field first responder
+            let success = window.makeFirstResponder(textField)
+            print("DEBUG: makeFirstResponder returned: \(success)")
+            print("DEBUG: Window first responder after: \(String(describing: window.firstResponder))")
+
+            // Force becomeFirstResponder
+            let becameFirst = textField.becomeFirstResponder()
+            print("DEBUG: becomeFirstResponder returned: \(becameFirst)")
+
             // Select all text
-            textField.currentEditor()?.selectAll(nil)
+            if let editor = textField.currentEditor() {
+                editor.selectAll(nil)
+                print("DEBUG: Selected all text in editor")
+            } else {
+                print("DEBUG: ⚠️ No current editor!")
+            }
+
             return
         }
 

@@ -198,8 +198,32 @@ struct SearchWindow: View {
 
     private func handleTab() {
         if query.hasPrefix("~") || query.hasPrefix("/") || query.hasPrefix(".") {
-            // Check if we're cycling through existing completions
-            let currentPath = query.hasSuffix("/") ? String(query.dropLast()) : query
+            // If query ends with /, user wants to go DEEPER, not cycle current level
+            // So always get fresh completions for that directory
+            if query.hasSuffix("/") {
+                let completions = autocompleter.autocomplete(query)
+
+                if completions.isEmpty {
+                    pathCompletions = []
+                    return
+                }
+
+                // Check if we're already cycling through these exact completions
+                if pathCompletions == completions {
+                    // Continue cycling
+                    completionIndex = (completionIndex + 1) % completions.count
+                } else {
+                    // New set of completions, start at beginning
+                    pathCompletions = completions
+                    completionIndex = 0
+                }
+
+                query = completions[completionIndex] + "/"
+                return
+            }
+
+            // Otherwise, check if we're cycling through existing completions
+            let currentPath = query
             let isCycling = !pathCompletions.isEmpty && pathCompletions.contains(currentPath)
 
             if isCycling {
@@ -226,8 +250,31 @@ struct SearchWindow: View {
 
     private func handleShiftTab() {
         if query.hasPrefix("~") || query.hasPrefix("/") || query.hasPrefix(".") {
-            // Check if we're cycling through existing completions
-            let currentPath = query.hasSuffix("/") ? String(query.dropLast()) : query
+            // If query ends with /, user wants to go DEEPER, not cycle current level
+            if query.hasSuffix("/") {
+                let completions = autocompleter.autocomplete(query)
+
+                if completions.isEmpty {
+                    pathCompletions = []
+                    return
+                }
+
+                // Check if we're already cycling through these exact completions
+                if pathCompletions == completions {
+                    // Continue cycling BACKWARDS
+                    completionIndex = (completionIndex - 1 + completions.count) % completions.count
+                } else {
+                    // New set of completions, start at END for backwards
+                    pathCompletions = completions
+                    completionIndex = completions.count - 1
+                }
+
+                query = completions[completionIndex] + "/"
+                return
+            }
+
+            // Otherwise, check if we're cycling through existing completions
+            let currentPath = query
             let isCycling = !pathCompletions.isEmpty && pathCompletions.contains(currentPath)
 
             if isCycling {
