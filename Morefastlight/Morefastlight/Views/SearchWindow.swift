@@ -198,27 +198,31 @@ struct SearchWindow: View {
 
     private func handleTab() {
         if query.hasPrefix("~") || query.hasPrefix("/") || query.hasPrefix(".") {
-            // If query ends with /, user wants to go DEEPER, not cycle current level
-            // So always get fresh completions for that directory
+            // If query ends with /, check if we're cycling or going deeper
             if query.hasSuffix("/") {
-                let completions = autocompleter.autocomplete(query)
+                // Remove trailing slash to check current path
+                let currentPath = String(query.dropLast())
 
-                if completions.isEmpty {
-                    pathCompletions = []
-                    return
-                }
-
-                // Check if we're already cycling through these exact completions
-                if pathCompletions == completions {
-                    // Continue cycling
-                    completionIndex = (completionIndex + 1) % completions.count
+                // If current path is IN our completion list, we're cycling through siblings
+                if !pathCompletions.isEmpty && pathCompletions.contains(currentPath) {
+                    // Continue cycling through the same level
+                    if let currentIndex = pathCompletions.firstIndex(of: currentPath) {
+                        completionIndex = (currentIndex + 1) % pathCompletions.count
+                    }
+                    query = pathCompletions[completionIndex] + "/"
                 } else {
-                    // New set of completions, start at beginning
+                    // Going deeper - get subdirectories
+                    let completions = autocompleter.autocomplete(query)
+
+                    if completions.isEmpty {
+                        pathCompletions = []
+                        return
+                    }
+
                     pathCompletions = completions
                     completionIndex = 0
+                    query = completions[0] + "/"
                 }
-
-                query = completions[completionIndex] + "/"
                 return
             }
 
@@ -250,26 +254,31 @@ struct SearchWindow: View {
 
     private func handleShiftTab() {
         if query.hasPrefix("~") || query.hasPrefix("/") || query.hasPrefix(".") {
-            // If query ends with /, user wants to go DEEPER, not cycle current level
+            // If query ends with /, check if we're cycling or going deeper
             if query.hasSuffix("/") {
-                let completions = autocompleter.autocomplete(query)
+                // Remove trailing slash to check current path
+                let currentPath = String(query.dropLast())
 
-                if completions.isEmpty {
-                    pathCompletions = []
-                    return
-                }
-
-                // Check if we're already cycling through these exact completions
-                if pathCompletions == completions {
-                    // Continue cycling BACKWARDS
-                    completionIndex = (completionIndex - 1 + completions.count) % completions.count
+                // If current path is IN our completion list, we're cycling through siblings
+                if !pathCompletions.isEmpty && pathCompletions.contains(currentPath) {
+                    // Continue cycling BACKWARDS through the same level
+                    if let currentIndex = pathCompletions.firstIndex(of: currentPath) {
+                        completionIndex = (currentIndex - 1 + pathCompletions.count) % pathCompletions.count
+                    }
+                    query = pathCompletions[completionIndex] + "/"
                 } else {
-                    // New set of completions, start at END for backwards
+                    // Going deeper - get subdirectories (start at end for backwards)
+                    let completions = autocompleter.autocomplete(query)
+
+                    if completions.isEmpty {
+                        pathCompletions = []
+                        return
+                    }
+
                     pathCompletions = completions
                     completionIndex = completions.count - 1
+                    query = completions[completionIndex] + "/"
                 }
-
-                query = completions[completionIndex] + "/"
                 return
             }
 
